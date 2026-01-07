@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/adptly/chatgpt-copy-cleaner/discussions
+    about: Ask questions or start discussions about the extension
+  - name: Security Vulnerability
+    url: mailto:code@adptly.com
+    about: Report security vulnerabilities privately via email (DO NOT create a public issue)
+  - name: General Support
+    url: https://github.com/adptly/chatgpt-copy-cleaner/blob/main/SUPPORT.md
+    about: View support options and documentation

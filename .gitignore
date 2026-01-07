@@ -1,0 +1,19 @@
+# Development files
+udpated/
+.cef/
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Internal planning docs
+PLAN.md
+GEMINI.md
+CLAUDE.md
+agents/
+.claude/

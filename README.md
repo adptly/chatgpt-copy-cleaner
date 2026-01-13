@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
 ![Chrome](https://img.shields.io/badge/chrome-88%2B-brightgreen.svg)
-![Firefox](https://img.shields.io/badge/firefox-109%2B-orange.svg)
+![Firefox](https://img.shields.io/badge/firefox-142%2B-orange.svg)
 ![Manifest](https://img.shields.io/badge/manifest-v3-yellow.svg)
 
 A browser extension that automatically removes citation links, reference markers, and tracking parameters when copying text from ChatGPT.
@@ -147,7 +147,7 @@ The extension uses a defense-in-depth strategy with three interception layers:
 
 - Chrome 88+
 - Edge 88+
-- Firefox 109+
+- Firefox 142+
 - Brave, Opera, Vivaldi (Chromium-based)
 
 ## Privacy

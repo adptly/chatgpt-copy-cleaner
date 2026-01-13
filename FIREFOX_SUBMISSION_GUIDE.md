@@ -106,7 +106,7 @@ This extension intercepts copy actions and cleans the text automatically - wheth
 ## Browser Support
 - Chrome 88+
 - Edge 88+
-- Firefox 109+
+- Firefox 142+
 - Brave, Opera, Vivaldi
 ```
 

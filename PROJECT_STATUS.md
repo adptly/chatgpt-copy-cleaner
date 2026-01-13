@@ -32,7 +32,7 @@
 | Source code clarity | ✅ | No build needed, vanilla JS |
 | Permissions justification | ✅ | Documented in README |
 | Icons (all sizes) | ✅ | 16, 32, 48, 128px |
-| Browser compatibility | ✅ | Firefox 109+, Chrome 88+ |
+| Browser compatibility | ✅ | Firefox 142+, Chrome 88+ |
 | No external dependencies | ✅ | Zero npm packages |
 | License specified | ✅ | MIT in LICENSE + manifest |
 
@@ -164,7 +164,7 @@
 | Package Size | 31KB |
 | License | MIT (permissive) |
 | Browsers Supported | 5+ (Firefox, Chrome, Edge, Brave, Opera) |
-| Minimum Firefox | 109.0 |
+| Minimum Firefox | 142.0 |
 | Manifest Version | 3 |
 
 ---

@@ -30,7 +30,7 @@ Please describe the tests that you ran to verify your changes:
 - [ ] Tested with different ChatGPT response types
 
 **Test Configuration:**
-- Browser: [e.g. Firefox 109]
+- Browser: [e.g. Firefox 142]
 - OS: [e.g. Windows 11]
 
 ## Checklist

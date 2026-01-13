@@ -154,7 +154,7 @@ Instead, email **code@adptly.com** or see [SECURITY.md](SECURITY.md) for details
 
 ### Firefox
 
-- Make sure you're on Firefox 109 or later
+- Make sure you're on Firefox 142 or later
 - If the extension doesn't load, check `about:debugging` for errors
 - For temporary installations, you need to reload after each browser restart
 

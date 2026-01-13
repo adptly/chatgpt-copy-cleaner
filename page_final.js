@@ -2,6 +2,7 @@
   "use strict";
 
   const HOOK_EVENT = "__chatgpt_copy_cleaner_hooked__";
+  const BYPASS_MARKER = "\x00__COPY_CLEANER_BYPASS__\x00";
 
   // Settings cache
   let isExtensionEnabled = true;
@@ -49,6 +50,33 @@
   // --- Cleaning Functions ---
 
   /**
+   * Strip trailing reference definition blocks (handles multi-line wrapped URLs)
+   */
+  function stripTrailingReferenceBlock(text) {
+    const lines = text.split(/\r?\n/);
+
+    while (lines.length) {
+      const last = lines[lines.length - 1].trim();
+      if (last === "") { lines.pop(); continue; }
+
+      // Reference definition start: [1]: ... or [MDN Web Docs]:
+      if (/^\[[^\]]+\]:/.test(last)) { lines.pop(); continue; }
+
+      // Continuations / wrapped link junk
+      if (/^https?:\/\//i.test(last)) { lines.pop(); continue; }
+      if (/utm_/i.test(last)) { lines.pop(); continue; }
+      if (/^hatgpt\.com/i.test(last)) { lines.pop(); continue; } // wrapped "chatgpt.com"
+
+      // Wrapped URL continuation line (URL fragments split mid-token)
+      if (/^[a-z0-9\-_/.?=&%]+$/i.test(last) && last.length < 120) { lines.pop(); continue; }
+
+      break;
+    }
+
+    return lines.join("\n");
+  }
+
+  /**
    * Aggressive mode: Remove ALL links, URLs, citations, and reference markers
    */
   function cleanAggressive(text) {
@@ -78,6 +106,8 @@
     t = t.replace(/[ \t]+/g, " ");
     t = t.replace(/ *\n */g, "\n");
     t = t.replace(/\n{3,}/g, "\n\n");
+    // Strip trailing multi-line reference blocks
+    t = stripTrailingReferenceBlock(t);
     return t.trim();
   }
 
@@ -108,6 +138,8 @@
     t = t.replace(/[ \t]+/g, " ");
     t = t.replace(/ *\n */g, "\n");
     t = t.replace(/\n{3,}/g, "\n\n");
+    // Strip trailing multi-line reference blocks
+    t = stripTrailingReferenceBlock(t);
     return t.trim();
   }
 
@@ -139,6 +171,15 @@
           return await origWriteText(text);
         }
         try {
+          // Check for bypass marker (set by content script click interception)
+          if (typeof text === "string" && text.startsWith(BYPASS_MARKER)) {
+            const unmarked = text.slice(BYPASS_MARKER.length);
+            if (showNotifications) {
+              console.log("[Copy Cleaner] Clipboard writeText bypassed (already cleaned)");
+            }
+            return await origWriteText(unmarked);
+          }
+
           const cleaned = cleanCopiedText(text);
           if (showNotifications) {
             console.log("[Copy Cleaner] Clipboard writeText cleaned");
@@ -175,7 +216,12 @@
 
               if (type === "text/plain") {
                 const txt = await blob.text();
-                out[type] = new Blob([cleanCopiedText(txt)], { type });
+                // Check for bypass marker
+                if (txt.startsWith(BYPASS_MARKER)) {
+                  out[type] = new Blob([txt.slice(BYPASS_MARKER.length)], { type });
+                } else {
+                  out[type] = new Blob([cleanCopiedText(txt)], { type });
+                }
               } else if (type === "text/html") {
                 // Convert to HTML from cleaned plain text (drop all links)
                 const txt = await blob.text();

@@ -1,8 +1,8 @@
 # Project Status: Open Source & Firefox Ready ✅
 
-**Date:** 2025-01-07
-**Version:** 1.0.0
-**Status:** 🟢 Ready for Firefox Submission
+**Date:** 2025-01-12
+**Version:** 1.1.0
+**Status:** 🟢 Ready for Release
 
 ---
 
@@ -53,7 +53,7 @@
 
 ## 📦 Package Contents
 
-**File:** `chatgpt-copy-cleaner-v1.0.0-firefox.zip` (31KB)
+**File:** `chatgpt-copy-cleaner-v1.1.0-firefox.zip`
 
 ### Extension Files:
 - ✅ manifest.json (with privacy policy)
@@ -102,24 +102,29 @@
 
 ---
 
-## 📋 What Was Added Today
+## 📋 What Was Added in v1.1.0
 
-### New Files Created:
-1. **SECURITY.md** - Vulnerability reporting, security practices
-2. **SUPPORT.md** - User support, troubleshooting FAQs
-3. **.github/ISSUE_TEMPLATE/bug_report.md** - Bug report template
-4. **.github/ISSUE_TEMPLATE/feature_request.md** - Feature request template
-5. **.github/ISSUE_TEMPLATE/config.yml** - Issue template config
-6. **.github/PULL_REQUEST_TEMPLATE.md** - PR checklist template
+### New Features:
+1. **Click interception layer** - `composedPath()`-based detection for copy buttons
+2. **Multi-line reference stripper** - Handles wrapped/split reference definitions
+3. **Smart code block detection** - Code block copy buttons pass through unchanged
+4. **Bypass marker system** - Prevents double-cleaning between layers
+
+### Architecture Changes:
+- Refactored to 3-layer defense-in-depth:
+  - Layer 1: Selection copy (`copy` event)
+  - Layer 2: Click interception (`composedPath()`)
+  - Layer 3: Clipboard API patch (fallback)
 
 ### Files Updated:
-1. **manifest.json** - Added privacy_policy field
-2. **README.md** - Added Privacy and Security sections
-3. **CONTRIBUTING.md** - Added support email
-4. **.gitignore** - Added PLAN.md, GEMINI.md, CLAUDE.md, agents/
-
-### Package Updated:
-- Recreated `chatgpt-copy-cleaner-v1.0.0-firefox.zip` with new docs
+1. **content.js** - Added click interception, multi-line stripper, code block detection
+2. **page_final.js** - Added bypass marker handling, multi-line stripper
+3. **manifest.json** - Version bump to 1.1.0
+4. **README.md** - Updated architecture docs, features
+5. **CHANGELOG.md** - Added v1.1.0 entry
+6. **CONTRIBUTING.md** - Added architecture overview, updated testing checklist
+7. **SUPPORT.md** - Added new troubleshooting entries
+8. **PROJECT_STATUS.md** - Updated for v1.1.0
 
 ---
 
@@ -194,5 +199,5 @@ See [LICENSE](LICENSE) for full text.
 
 ---
 
-**Last Updated:** 2025-01-07
-**Next Review:** After Firefox approval
+**Last Updated:** 2025-01-12
+**Next Review:** After v1.1.0 release

@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-12
+
+### Added
+- **Click interception layer**: New `composedPath()`-based detection for copy button clicks
+  - Survives DOM structure changes (shadow DOM, portals, `<div role="button">`)
+  - More reliable than clipboard patching in Firefox
+- **Multi-line reference block stripper**: Handles wrapped/split reference definitions
+  - Uses line-scanner approach instead of single-line regex
+  - Strips trailing reference blocks from bottom up
+- **Smart code block detection**: Distinguishes code block copy buttons from message copy buttons
+  - Code block copies pass through unchanged (no cleaning)
+  - Message copies are cleaned normally
+- **Bypass marker system**: Prevents double-cleaning when multiple layers succeed
+
+### Changed
+- Refactored to 3-layer defense-in-depth architecture:
+  - Layer 1: Selection copy (content script, `copy` event)
+  - Layer 2: Click interception (content script, `composedPath()`)
+  - Layer 3: Clipboard API patch (page world, fallback)
+- Improved Firefox reliability by prioritizing DOM-based interception over clipboard patching
+
+### Fixed
+- Multi-line reference definitions now properly stripped (previously only single-line worked)
+- Code block copy buttons no longer clean code content
+
+---
+
 ## [1.0.0] - 2025-01-07
 
 ### Added
@@ -64,4 +91,5 @@ Each release will document:
 - **Fixed**: Bug fixes
 - **Security**: Security patches
 
+[1.1.0]: https://github.com/adptly/chatgpt-copy-cleaner/releases/tag/v1.1.0
 [1.0.0]: https://github.com/adptly/chatgpt-copy-cleaner/releases/tag/v1.0.0

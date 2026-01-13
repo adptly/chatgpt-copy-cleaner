@@ -5,6 +5,7 @@
   const storage = browserAPI.storage.sync || browserAPI.storage.local;
 
   const HOOK_EVENT = "__chatgpt_copy_cleaner_hooked__";
+  const BYPASS_MARKER = "\x00__COPY_CLEANER_BYPASS__\x00";
 
   // Local cache of settings
   let isEnabled = true;
@@ -67,6 +68,33 @@
   // --- Cleaner logic (for selection copy) ---
 
   /**
+   * Strip trailing reference definition blocks (handles multi-line wrapped URLs)
+   */
+  function stripTrailingReferenceBlock(text) {
+    const lines = text.split(/\r?\n/);
+
+    while (lines.length) {
+      const last = lines[lines.length - 1].trim();
+      if (last === "") { lines.pop(); continue; }
+
+      // Reference definition start: [1]: ... or [MDN Web Docs]:
+      if (/^\[[^\]]+\]:/.test(last)) { lines.pop(); continue; }
+
+      // Continuations / wrapped link junk
+      if (/^https?:\/\//i.test(last)) { lines.pop(); continue; }
+      if (/utm_/i.test(last)) { lines.pop(); continue; }
+      if (/^hatgpt\.com/i.test(last)) { lines.pop(); continue; } // wrapped "chatgpt.com"
+
+      // Wrapped URL continuation line (URL fragments split mid-token)
+      if (/^[a-z0-9\-_/.?=&%]+$/i.test(last) && last.length < 120) { lines.pop(); continue; }
+
+      break;
+    }
+
+    return lines.join("\n");
+  }
+
+  /**
    * Aggressive mode: Remove ALL links, URLs, citations, and reference markers
    */
   function cleanAggressive(text) {
@@ -85,6 +113,8 @@
     t = t.replace(/[ \t]+/g, " ");
     t = t.replace(/ *\n */g, "\n");
     t = t.replace(/\n{3,}/g, "\n\n");
+    // Strip trailing multi-line reference blocks
+    t = stripTrailingReferenceBlock(t);
     return t.trim();
   }
 
@@ -115,6 +145,8 @@
     t = t.replace(/[ \t]+/g, " ");
     t = t.replace(/ *\n */g, "\n");
     t = t.replace(/\n{3,}/g, "\n\n");
+    // Strip trailing multi-line reference blocks
+    t = stripTrailingReferenceBlock(t);
     return t.trim();
   }
 
@@ -185,6 +217,107 @@
       e.preventDefault();
     },
     true
+  );
+
+  // --- Copy Button Click Interception (composedPath-based, DOM-resilient) ---
+
+  /**
+   * Find a "copy intent" element in the click's composed path.
+   * Handles shadow DOM, portals, and non-button clickable elements.
+   */
+  function findCopyIntentInPath(e) {
+    const path = e.composedPath?.() || [];
+    for (const n of path) {
+      if (!(n instanceof HTMLElement)) continue;
+      const aria = (n.getAttribute("aria-label") || "").toLowerCase();
+      const title = (n.getAttribute("title") || "").toLowerCase();
+      const testid = (n.getAttribute("data-testid") || "").toLowerCase();
+
+      const looksCopy = aria.includes("copy") || title.includes("copy") || testid.includes("copy");
+      if (!looksCopy) continue;
+
+      // Accept button, role="button", or clickable div/span
+      if (n.matches("button, [role='button'], div, span")) return n;
+    }
+    return null;
+  }
+
+  /**
+   * Find the assistant message container from the click's composed path.
+   */
+  function findAssistantContainerFromPath(e) {
+    const path = e.composedPath?.() || [];
+    for (const n of path) {
+      if (!(n instanceof HTMLElement)) continue;
+      if (n.getAttribute?.("data-message-author-role") === "assistant") return n;
+    }
+    return null;
+  }
+
+  /**
+   * Extract message text from an assistant container.
+   * If copyElement is inside a code block, returns just that code.
+   * Otherwise returns the full message content.
+   */
+  function getMessageText(container, copyElement) {
+    if (!container) return null;
+
+    // Check if copy button is for a specific code block
+    if (copyElement) {
+      const codeBlock = copyElement.closest('pre, [class*="code-block"], [class*="codeblock"]');
+      if (codeBlock) {
+        const code = codeBlock.querySelector('code');
+        // Return code content without cleaning (it's code, should be preserved)
+        return { text: code?.textContent || codeBlock.textContent, isCode: true };
+      }
+    }
+
+    // Fall back to full message
+    const markdownDiv = container.querySelector(".markdown, .prose, [class*='markdown']");
+    const text = markdownDiv?.innerText || container.innerText;
+    return { text, isCode: false };
+  }
+
+  // Capture-phase click handler for copy button interception
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (!isEnabled) return;
+
+      const copyEl = findCopyIntentInPath(e);
+      if (!copyEl) return;
+
+      const assistantContainer = findAssistantContainerFromPath(e);
+      if (!assistantContainer) return;
+
+      const result = getMessageText(assistantContainer, copyEl);
+      if (!result || !result.text) return;
+
+      // Skip cleaning for code blocks (preserve code as-is)
+      const textToCopy = result.isCode ? result.text : cleanCopiedText(result.text);
+      if (!textToCopy) return;
+
+      // Write to clipboard (we're in a user gesture context)
+      // Prefix with marker so main-world patch knows to skip re-cleaning
+      const markedText = BYPASS_MARKER + textToCopy;
+
+      navigator.clipboard.writeText(markedText).then(() => {
+        if (showNotifications) {
+          const msg = result.isCode ? "Code copied" : "Copied (cleaned)";
+          console.log(`[Copy Cleaner] ${msg}`);
+          showToast(msg, true);
+        }
+      }).catch((err) => {
+        console.warn("[Copy Cleaner] Clipboard write failed:", err);
+        // Let the original click proceed if our write fails
+        return;
+      });
+
+      // Prevent the original copy action
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    true // capture phase
   );
 
   // --- UI Feedback (Toast) ---

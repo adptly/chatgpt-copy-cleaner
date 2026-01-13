@@ -48,9 +48,21 @@ Manual testing checklist:
 - [ ] All toggle switches work as expected
 - [ ] Aggressive mode removes all links
 - [ ] Conservative mode preserves inline links
-- [ ] Code block protection works for ``` and ` blocks
+- [ ] Code block protection works for ``` and ` blocks in message text
+- [ ] Code block copy buttons pass through unchanged (no cleaning)
+- [ ] Multi-line reference blocks are properly stripped
 - [ ] Console notifications toggle works
 - [ ] Toast notifications appear when enabled
+
+## Architecture Overview
+
+The extension uses a 3-layer defense-in-depth strategy:
+
+1. **Layer 1 - Selection Copy** (`content.js`): Handles Ctrl/Cmd+C via `copy` event
+2. **Layer 2 - Click Interception** (`content.js`): Uses `composedPath()` for DOM-resilient copy button detection
+3. **Layer 3 - Clipboard Patch** (`page_final.js`): Patches clipboard API in page world as fallback
+
+When modifying the cleaning logic, update both `content.js` and `page_final.js` to keep them in sync.
 
 ## Pull Request Guidelines
 

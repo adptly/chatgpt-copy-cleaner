@@ -2,6 +2,8 @@
 udpated/
 .cef/
 *.log
+*.zip
+nul
 .DS_Store
 Thumbs.db
 

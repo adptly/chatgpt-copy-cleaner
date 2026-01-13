@@ -117,6 +117,28 @@ Instead, email **code@adptly.com** or see [SECURITY.md](SECURITY.md) for details
 
 ---
 
+### Code Block Copy Button Not Working
+
+**Problem:** Clicking the copy button on a code block doesn't copy the code
+
+**Solutions:**
+- Code block copy buttons should pass through unchanged (no cleaning applied)
+- If code is being cleaned, please [report as a bug](https://github.com/adptly/chatgpt-copy-cleaner/issues/new?template=bug_report.md)
+- Try using Ctrl+C to select and copy the code directly
+
+---
+
+### Reference Links Still Appearing
+
+**Problem:** Multi-line reference definitions at the bottom of copied text aren't being removed
+
+**Solutions:**
+1. Update to version 1.1.0 or later (includes multi-line reference stripper)
+2. Check if the references are in an unusual format
+3. [Report as a bug](https://github.com/adptly/chatgpt-copy-cleaner/issues/new?template=bug_report.md) with an example of the text
+
+---
+
 ### Extension Conflicts
 
 **Problem:** Extension conflicts with other extensions

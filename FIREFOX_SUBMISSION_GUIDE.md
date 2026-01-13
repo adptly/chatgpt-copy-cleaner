@@ -4,7 +4,7 @@ This guide walks you through submitting ChatGPT Copy Cleaner to Firefox Add-ons 
 
 ## Package Created ✅
 
-Your extension has been packaged: **chatgpt-copy-cleaner-v1.0.0-firefox.zip** (27KB)
+Your extension has been packaged: **chatgpt-copy-cleaner-v1.1.0-firefox.zip**
 
 ### Package Contents:
 - manifest.json
@@ -34,7 +34,7 @@ Your extension has been packaged: **chatgpt-copy-cleaner-v1.0.0-firefox.zip** (2
 
 ### 2.2 Upload Your Extension
 1. Click **Select a file...** or drag and drop
-2. Upload: `chatgpt-copy-cleaner-v1.0.0-firefox.zip`
+2. Upload: `chatgpt-copy-cleaner-v1.1.0-firefox.zip`
 3. Wait for automatic validation (usually 30-60 seconds)
 4. Fix any errors if shown (there shouldn't be any)
 
@@ -174,15 +174,14 @@ If asked, you can add:
 This extension does not collect, store, or transmit any user data. All text processing happens locally in your browser.
 ```
 
-### 5.3 Version Notes (for v1.0.0)
+### 5.3 Version Notes (for v1.1.0)
 ```
-Initial release featuring:
-- Automatic removal of citation links and reference markers
-- Support for both copy methods (Ctrl+C and copy button)
-- Aggressive and conservative cleaning modes
-- Code block protection
-- Console notifications toggle
-- Cross-browser compatibility
+v1.1.0 improvements:
+- DOM-resilient click interception using composedPath()
+- Multi-line reference block handling
+- Smart code block copy detection
+- 3-layer defense-in-depth architecture
+- Improved Firefox reliability
 ```
 
 ---

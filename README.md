@@ -1,7 +1,7 @@
 # ChatGPT Copy Cleaner
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
 ![Chrome](https://img.shields.io/badge/chrome-88%2B-brightgreen.svg)
 ![Firefox](https://img.shields.io/badge/firefox-109%2B-orange.svg)
 ![Manifest](https://img.shields.io/badge/manifest-v3-yellow.svg)
@@ -71,8 +71,12 @@ If you tell me what you want Firefox to do (ad-blocking, password management, ta
 - **Conservative mode**: Keeps intentional inline links, removes citation noise only
 - **Works with both copy methods:**
   - Ctrl/Cmd+C (keyboard selection)
-  - ChatGPT's copy button (clipboard API hook)
-- **Code block protection**: Preserves URLs inside ``` and ` code blocks
+  - ChatGPT's copy button (click interception + clipboard API hook)
+- **DOM-resilient detection**: Uses `composedPath()` to find copy buttons even when ChatGPT changes its UI structure
+- **Smart code block handling**:
+  - Preserves URLs inside ``` and ` code blocks in message text
+  - Passes through code block copy buttons unchanged (no cleaning)
+- **Multi-line reference handling**: Strips wrapped reference definitions that span multiple lines
 - **Console notifications**: Optional logging to DevTools
 - **Cross-browser support**: Firefox and Chromium-based browsers
 - **Toast notifications**: Visual feedback when cleaning is active
@@ -104,20 +108,36 @@ If you tell me what you want Firefox to do (ad-blocking, password management, ta
 
 ## How It Works
 
-The extension uses two interception strategies:
+The extension uses a defense-in-depth strategy with three interception layers:
 
-1. **Selection copy (Ctrl+C)** - Listens for `copy` events and cleans text via `clipboardData.setData()`
+| Layer | Method | Runs In | Handles |
+|-------|--------|---------|---------|
+| 1 | Selection copy (`copy` event) | Content script | Ctrl/Cmd+C |
+| 2 | Click interception (`composedPath()`) | Content script | Copy buttons |
+| 3 | Clipboard API patch | Page world | Fallback |
 
-2. **Copy button** - Patches `navigator.clipboard.writeText()` and `navigator.clipboard.write()` in the page context:
-   - **Firefox**: Uses `wrappedJSObject` + `exportFunction` (bypasses CSP)
-   - **Chromium**: Injects `page_final.js` into the page world
+**Layer 1 - Selection Copy:** Listens for `copy` events and cleans text via `clipboardData.setData()`.
+
+**Layer 2 - Click Interception:** Uses `event.composedPath()` to detect copy button clicks regardless of DOM structure changes (shadow DOM, portals, `<div role="button">`, etc.). This is the most reliable layer for Firefox.
+
+**Layer 3 - Clipboard Patch:** Patches `navigator.clipboard.writeText()` and `clipboard.write()` in the page context as a fallback. A bypass marker prevents double-cleaning when Layer 2 succeeds.
+
+**Smart Content Detection:**
+- Detects if a copy button is for a code block vs. entire message
+- Code block copies are passed through unchanged
+- Message copies are cleaned of citations and reference noise
+
+**Multi-line Reference Handling:**
+- Handles wrapped/split reference definitions that span multiple lines
+- Uses a line-scanner to strip trailing reference blocks from the bottom up
 
 ## Files
 
 ```
 ├── manifest.json       # Extension manifest (MV3)
-├── content.js          # Content script (selection copy + hook injection)
-├── page_final.js       # Page-world script (clipboard API patches)
+├── background.js       # Background script (handles page-world injection)
+├── content.js          # Content script (Layer 1: selection copy, Layer 2: click interception)
+├── page_final.js       # Page-world script (Layer 3: clipboard API patches)
 ├── popup.html/css/js   # Settings popup UI
 ├── icons/              # Extension icons
 └── generate-icons.html # Icon generator tool
